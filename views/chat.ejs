@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><%- include('partials/head') %></head>
-<body data-theme="<%= theme %>">
+<body data-theme="<%= theme %>" style="padding-bottom:0;">
   <%- include('partials/navbar') %>
 
   <div class="chat-wrap">
@@ -103,5 +103,7 @@
       pollTimer = setInterval(loadMessages, 3000); // simulasi realtime via polling
     }
   </script>
+
+  <%- include('partials/bottom-nav', { active: 'chat' }) %>
 </body>
 </html>
