@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('partials/head') %></head>
+<body data-theme="<%= theme %>">
+  <%- include('partials/navbar') %>
+
+  <div style="padding:24px; max-width:1100px; margin:0 auto;">
+    <% if (flash) { %>
+      <div class="flash flash-<%= flash.type %>"><%= flash.msg %></div>
+    <% } %>
+
+    <div class="grid">
+      <div class="card">
+        <div style="color:var(--text-dim); font-size:13px;">SISA LIMIT</div>
+        <div class="stat-num"><%= user.limit %> <span style="font-size:16px; color:var(--text-dim);">/ <%= user.limitTotal %></span></div>
+      </div>
+      <div class="card">
+        <div style="color:var(--text-dim); font-size:13px;">ROLE KAMU</div>
+        <div class="stat-num" style="font-size:22px;"><span class="badge badge-<%= user.role %>"><%= user.role %></span></div>
+      </div>
+      <div class="card">
+        <div style="color:var(--text-dim); font-size:13px;">TOTAL DIDAFTARKAN</div>
+        <div class="stat-num"><%= myWa.length + myTg.length %></div>
+      </div>
+    </div>
+
+    <% if (notifs.length) { %>
+    <div class="card" style="margin:0 20px 20px;">
+      <h3 style="margin-top:0;">🔔 Notifikasi</h3>
+      <% notifs.forEach(function(n){ %>
+        <div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:14px;">
+          <%= n.message %>
+          <div style="font-size:11px; color:var(--text-dim);"><%= new Date(n.createdAt).toLocaleString('id-ID') %></div>
+        </div>
+      <% }); %>
+    </div>
+    <% } %>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <!-- TAMBAH NOMOR WA -->
+      <div class="card">
+        <h3 style="margin-top:0;">📱 Database WhatsApp</h3>
+        <form method="POST" action="/wa/add">
+          <div class="input-group">
+            <input type="text" name="number" placeholder="Contoh: 6281234567890" required>
+          </div>
+          <button class="btn" style="width:100%;">+ Tambah Nomor</button>
+        </form>
+        <div class="table-wrap" style="margin-top:16px; max-height:260px; overflow-y:auto;">
+          <table>
+            <thead><tr><th>Nomor</th><th>Status</th></tr></thead>
+            <tbody>
+              <% myWa.forEach(function(w){ %>
+                <tr><td><%= w.number %></td><td><%= w.status %></td></tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAMBAH TOKEN TG -->
+      <div class="card">
+        <h3 style="margin-top:0;">🤖 Database Telegram</h3>
+        <form method="POST" action="/tg/add">
+          <div class="input-group">
+            <input type="text" name="token" placeholder="Bot Token" required>
+          </div>
+          <div class="input-group">
+            <input type="text" name="ownerId" placeholder="Owner ID (Telegram ID)" required>
+          </div>
+          <button class="btn" style="width:100%;">+ Tambah Token</button>
+        </form>
+        <div class="table-wrap" style="margin-top:16px; max-height:260px; overflow-y:auto;">
+          <table>
+            <thead><tr><th>Token</th><th>Valid?</th><th></th></tr></thead>
+            <tbody>
+              <% myTg.forEach(function(t){ %>
+                <tr>
+                  <td style="font-family:monospace; font-size:12px;"><%= t.token.slice(0,10) %>...</td>
+                  <td><%= t.isValid === null ? '❓' : (t.isValid ? '✅' : '❌') %></td>
+                  <td>
+                    <form method="POST" action="/tg/check/<%= t._id %>">
+                      <button class="btn btn-outline btn-sm">Cek</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

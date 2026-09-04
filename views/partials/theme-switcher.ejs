@@ -1,0 +1,19 @@
+<div class="theme-picker" title="Ganti tema warna">
+  <div class="theme-dot" style="background:#00e5ff" onclick="setTheme('black')"></div>
+  <div class="theme-dot" style="background:#3b82f6" onclick="setTheme('white')"></div>
+  <div class="theme-dot" style="background:#00aaff" onclick="setTheme('blue')"></div>
+  <div class="theme-dot" style="background:#ff9500" onclick="setTheme('orange')"></div>
+  <div class="theme-dot" style="background:#ff3355" onclick="setTheme('red')"></div>
+  <div class="theme-dot" style="background:#b833ff" onclick="setTheme('purple')"></div>
+  <div class="theme-dot" style="background:#33ff77" onclick="setTheme('green')"></div>
+</div>
+<script>
+  function setTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    fetch('/set-theme', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme })
+    });
+  }
+</script>

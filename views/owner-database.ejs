@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('partials/head') %></head>
+<body data-theme="<%= theme %>">
+  <%- include('partials/navbar') %>
+
+  <div style="padding:24px; max-width:1200px; margin:0 auto;">
+    <% if (flash) { %><div class="flash flash-<%= flash.type %>"><%= flash.msg %></div><% } %>
+
+    <div class="grid" style="grid-template-columns: 1fr 1fr;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">📱 Semua Nomor WhatsApp (<%= waList.length %>)</h3>
+          <form method="POST" action="/owner/wa/delete-all" onsubmit="return confirm('Yakin hapus SEMUA nomor?')">
+            <button class="btn btn-danger btn-sm">Hapus Semua</button>
+          </form>
+        </div>
+        <div class="table-wrap" style="max-height:400px; overflow-y:auto; margin-top:12px;">
+          <table>
+            <thead><tr><th>Nomor</th><th>Ditambah</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <% waList.forEach(function(w){ %>
+                <tr>
+                  <td><%= w.number %></td>
+                  <td style="font-size:12px;"><%= w.addedBy %></td>
+                  <td><%= w.status %></td>
+                  <td><form method="POST" action="/owner/wa/<%= w._id %>/delete"><button class="btn btn-sm btn-danger">X</button></form></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">🤖 Semua Token Telegram (<%= tgList.length %>)</h3>
+          <form method="POST" action="/owner/tg/delete-all" onsubmit="return confirm('Yakin hapus SEMUA token?')">
+            <button class="btn btn-danger btn-sm">Hapus Semua</button>
+          </form>
+        </div>
+        <div class="table-wrap" style="max-height:400px; overflow-y:auto; margin-top:12px;">
+          <table>
+            <thead><tr><th>Token</th><th>Owner ID</th><th>Ditambah</th><th>Valid?</th><th></th></tr></thead>
+            <tbody>
+              <% tgList.forEach(function(t){ %>
+                <tr>
+                  <td style="font-family:monospace; font-size:11px;"><%= t.token.slice(0,10) %>...</td>
+                  <td style="font-size:12px;"><%= t.ownerId %></td>
+                  <td style="font-size:12px;"><%= t.addedBy %></td>
+                  <td><%= t.isValid === null ? '❓' : (t.isValid ? '✅' : '❌') %></td>
+                  <td><form method="POST" action="/owner/tg/<%= t._id %>/delete"><button class="btn btn-sm btn-danger">X</button></form></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

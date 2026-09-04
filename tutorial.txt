@@ -1,0 +1,214 @@
+====================================================
+  TUTORIAL LENGKAP — ALEX DATABASE SCRIPT
+====================================================
+
+DAFTAR ISI
+1. Apa isi project ini
+2. Setup MongoDB Atlas (database utama)
+3. Isi file .env
+4. Jalankan di komputer sendiri (testing)
+5. Deploy ke Vercel
+6. Bikin akun OWNER pertama kali
+7. Cara nyambungin script WA/TG kamu ke Web ini (lewat link Vercel)
+8. Penjelasan role & limit
+9. Penjelasan sistem keamanan (IP-lock, anti brute-force)
+10. Fitur Owner
+11. Fitur Chat
+12. (Opsional) Backup ke GitHub
+13. Catatan jujur soal batasan sistem
+
+
+----------------------------------------------------
+1. APA ISI PROJECT INI
+----------------------------------------------------
+Ini adalah WEB PANEL untuk mengelola akses/lisensi script kamu:
+- Setiap user login pakai username+password sesuai role-nya
+- Tiap role dapat "limit" — jumlah nomor WA / token TG yang boleh
+  mereka daftarkan ke database
+- Owner (kamu) bisa lihat, atur limit, ban, broadcast notifikasi,
+  dan memonitor aktivitas login semua user
+- Ada fitur chat internal (private & grup) buat komunikasi sesama
+  user yang punya akses
+
+
+----------------------------------------------------
+2. SETUP MONGODB ATLAS (DATABASE UTAMA)
+----------------------------------------------------
+1. Buka https://www.mongodb.com/cloud/atlas/register, daftar gratis
+2. Bikin "Cluster" baru (pilih paket FREE / M0)
+3. Di menu "Database Access" → buat user database baru (username & password)
+4. Di menu "Network Access" → klik "Add IP Address" → pilih
+   "Allow access from anywhere" (0.0.0.0/0) supaya Vercel bisa konek
+5. Klik "Connect" pada cluster → "Drivers" → copy connection string,
+   bentuknya kira-kira:
+   mongodb+srv://USERNAME:PASSWORD@cluster0.xxxxx.mongodb.net/
+6. Tambahkan nama database di belakangnya, jadi:
+   mongodb+srv://USERNAME:PASSWORD@cluster0.xxxxx.mongodb.net/alex_database?retryWrites=true&w=majority
+
+
+----------------------------------------------------
+3. ISI FILE .env
+----------------------------------------------------
+1. Copy file ".env.example" jadi ".env"
+2. Isi MONGO_URI dengan connection string dari langkah 2
+3. Isi SESSION_SECRET dengan string acak panjang (boleh generate di
+   https://randomkeygen.com)
+4. Isi OWNER_SETUP_USERNAME & OWNER_SETUP_PASSWORD — ini dipakai
+   SEKALI untuk bikin akun owner pertama
+5. Kontak developer (CONTACT_DEV, CONTACT_CH1-3) sudah diisi default
+   sesuai permintaanmu, tinggal ganti kalau mau ubah
+
+
+----------------------------------------------------
+4. JALANKAN DI KOMPUTER SENDIRI (TESTING)
+----------------------------------------------------
+Buka terminal di folder project, lalu:
+
+    npm install
+    npm start
+
+Buka browser ke http://localhost:5000
+
+
+----------------------------------------------------
+5. DEPLOY KE VERCEL
+----------------------------------------------------
+1. Push folder project ini ke repository GitHub baru
+2. Buka https://vercel.com → "Add New Project" → import repo GitHub tadi
+3. Di halaman setting project Vercel, buka tab "Environment Variables"
+   → masukkan SEMUA isi file .env kamu satu-satu (MONGO_URI,
+   SESSION_SECRET, DB_DISPLAY_NAME, dst)
+4. Klik "Deploy"
+5. Setelah selesai, kamu akan dapat URL contoh:
+   https://alex-database-kamu.vercel.app
+   Inilah "link Vercel" yang dipakai script WA/TG kamu buat cek akses.
+
+
+----------------------------------------------------
+6. BIKIN AKUN OWNER PERTAMA KALI
+----------------------------------------------------
+Setelah deploy sukses, buka sekali:
+
+    https://alex-database-kamu.vercel.app/setup-owner
+
+Ini akan otomatis membuat akun owner sesuai OWNER_SETUP_USERNAME &
+OWNER_SETUP_PASSWORD di env. SETELAH BERHASIL, sebaiknya hapus baris
+route '/setup-owner' di server.js (lihat routes/auth.js) lalu deploy
+ulang, supaya endpoint ini tidak bisa dipakai orang lain.
+
+
+----------------------------------------------------
+7. CARA NYAMBUNGIN SCRIPT WA/TG KE WEB INI (LEWAT LINK VERCEL)
+----------------------------------------------------
+Di script bot WA/TG kamu (yang mau dilindungi), tambahkan pengecekan
+ke API berikut sebelum bot boleh jalan:
+
+Contoh (Node.js) — cek apakah nomor WA terdaftar & aktif:
+
+    const fetch = require('node-fetch');
+    const BASE_URL = 'https://contohnih.app.vercel.app'; // ganti link Vercel kamu
+
+    async function cekAksesWa(nomor) {
+      const res = await fetch(`${BASE_URL}/whatsapp`);
+      const data = await res.json();
+      const found = data.find(item => item.number === nomor);
+      return found && found.status === 'active';
+    }
+
+    // dipakai di awal script:
+    const boleh = await cekAksesWa('6281234567890');
+    if (!boleh) {
+      console.log('Nomor tidak terdaftar / diblokir. Script berhenti.');
+      process.exit(1);
+    }
+
+(Catatan: endpoint /whatsapp saat ini publik untuk kemudahan integrasi.
+Kalau mau lebih aman, saya bisa tambahkan API-key khusus supaya endpoint
+ini hanya bisa diakses script yang tahu key-nya — tinggal bilang.)
+
+
+----------------------------------------------------
+8. PENJELASAN ROLE & LIMIT
+----------------------------------------------------
+    user       -> limit 3   (sebelumnya diminta 1, kamu ubah ke 3)
+    ress       -> limit 10
+    partner    -> limit 17
+    admin      -> limit 25
+    moderator  -> limit 30
+    owner      -> unlimited, full control
+
+Limit ini otomatis berkurang tiap kali user menambahkan 1 nomor WA
+atau 1 token TG. Owner bisa mengubah limit siapa saja kapan saja
+lewat panel Owner, angka berapa pun (tidak terikat default role).
+
+
+----------------------------------------------------
+9. PENJELASAN SISTEM KEAMANAN
+----------------------------------------------------
+- IP-LOCK: begitu sebuah akun berhasil login PERTAMA KALI, sistem
+  menyimpan IP tersebut. Kalau ada yang coba login pakai
+  username+password YANG SAMA dari IP LAIN, sistem akan menolak
+  meskipun passwordnya benar. Ini mencegah akun dijual/dibagikan ke
+  orang lain secara diam-diam.
+- Kalau user ganti WiFi/provider/lokasi dan IP-nya berubah, owner
+  tinggal klik tombol "Reset IP" di panel Owner untuk membuka kunci.
+- SALAH PASSWORD 5x -> akun otomatis dikunci sementara 15 menit.
+- Semua password disimpan ter-enkripsi (bcrypt), bukan teks polos.
+- Rate-limit login mencegah orang mencoba ratusan password berturut-
+  turut dari satu IP.
+- Semua secret (token GitHub, MongoDB, session) disimpan di
+  Environment Variables, TIDAK ditulis langsung di kode seperti
+  project lama kamu (app.js lama menaruh token GitHub & password
+  langsung di source code — ini bahaya karena siapa pun yang lihat
+  kodenya bisa mencuri token itu).
+
+
+----------------------------------------------------
+10. FITUR OWNER
+----------------------------------------------------
+- Buat user baru + tentukan role & limit
+- Ubah limit siapa saja, kapan saja
+- Ubah role siapa saja
+- Ban / unban akun
+- Reset IP-lock akun
+- Hapus akun
+- Lihat & hapus semua nomor WA / token TG (satu-satu atau sekaligus)
+- Broadcast notifikasi ke semua user atau role tertentu
+- Halaman Monitor: live log semua percobaan login (sukses, salah
+  password, IP mismatch, dll) — auto refresh tiap 5 detik
+- Daftar akun "mencurigakan" (banyak salah password / IP mismatch)
+
+
+----------------------------------------------------
+11. FITUR CHAT
+----------------------------------------------------
+- Chat private ke user lain cukup dengan tahu username-nya (mirip
+  chat Telegram/WhatsApp)
+- Bisa bikin grup, isi anggota lewat daftar username dipisah koma
+- Pesan diperbarui tiap 3 detik (bukan websocket asli, karena hosting
+  Vercel serverless tidak mendukung koneksi persisten — tapi terasa
+  hampir real-time untuk chat internal seperti ini)
+
+
+----------------------------------------------------
+12. (OPSIONAL) BACKUP KE GITHUB
+----------------------------------------------------
+Kalau kamu tetap mau backup data WA/TG ke file JSON di repo GitHub
+(sebagai cadangan, BUKAN database utama), isi GITHUB_OWNER,
+GITHUB_REPO, GITHUB_TOKEN di .env. Fitur ini belum saya aktifkan
+otomatis di kode supaya kamu tidak dikenakan rate-limit GitHub API
+tiap kali ada yang menambah nomor — tapi strukturnya sudah disiapkan.
+Bilang kalau mau saya aktifkan sinkronisasi otomatisnya.
+
+
+----------------------------------------------------
+13. CATATAN JUJUR SOAL BATASAN SISTEM
+----------------------------------------------------
+- Chat & monitoring pakai "polling" (cek berkala), bukan WebSocket
+  asli — cukup untuk kebutuhan internal, tapi ada jeda 3-5 detik.
+- Saya TIDAK membuat fitur "menyembunyikan koneksi database dari
+  deteksi" karena itu bukan langkah keamanan yang sah — kalau nanti
+  ada kebutuhan keamanan tambahan yang spesifik, ceritakan skenarionya
+  dan saya bantu carikan solusi yang benar.
+- Endpoint /whatsapp saat ini masih publik (lihat poin 7) — kabari
+  saya kalau mau saya kunci pakai API key.

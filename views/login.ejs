@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('partials/head') %></head>
+<body data-theme="black">
+  <div class="login-wrap">
+    <div class="login-box card">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div class="logo-orb" style="width:70px; height:70px; font-size:24px; margin:0 auto 10px;">🔐</div>
+        <h2 style="margin:0;"><%= dbName %></h2>
+        <p style="color:var(--text-dim); font-size:13px;">Login untuk mengakses panel</p>
+      </div>
+
+      <% if (error) { %>
+        <div class="flash flash-error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/login">
+        <div class="input-group">
+          <input type="text" name="username" placeholder="Username" required autocomplete="username">
+        </div>
+        <div class="input-group">
+          <input type="password" id="passInput" name="password" placeholder="Password" required autocomplete="current-password">
+          <span class="toggle-pass" onclick="togglePass()">👁️ Show</span>
+        </div>
+        <button type="submit" class="btn" style="width:100%;">Masuk</button>
+      </form>
+
+      <p style="text-align:center; font-size:12px; color:var(--text-dim); margin-top:16px;">
+        ⚠️ Akun terkunci ke IP pertama kali login. Salah password 5x = terkunci 15 menit.
+      </p>
+
+      <div style="text-align:center; margin-top:14px;">
+        <a href="/" style="color:var(--accent); font-size:13px; text-decoration:none;">← Kembali ke halaman awal</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePass() {
+      const inp = document.getElementById('passInput');
+      const isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      event.target.textContent = isPass ? '🙈 Hide' : '👁️ Show';
+    }
+  </script>
+</body>
+</html>

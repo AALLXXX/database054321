@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('partials/head') %></head>
+<body data-theme="<%= theme %>">
+  <%- include('partials/navbar') %>
+
+  <div style="padding:24px; max-width:1200px; margin:0 auto;">
+    <% if (flash) { %><div class="flash flash-<%= flash.type %>"><%= flash.msg %></div><% } %>
+
+    <div class="grid">
+      <div class="card"><div style="color:var(--text-dim); font-size:13px;">TOTAL USER</div><div class="stat-num"><%= users.length %></div></div>
+      <div class="card"><div style="color:var(--text-dim); font-size:13px;">NOMOR WA TERDAFTAR</div><div class="stat-num"><%= waCount %></div></div>
+      <div class="card"><div style="color:var(--text-dim); font-size:13px;">TOKEN TG TERDAFTAR</div><div class="stat-num"><%= tgCount %></div></div>
+      <div class="card"><div style="color:var(--text-dim); font-size:13px;">AKUN MENCURIGAKAN</div><div class="stat-num" style="color:var(--danger);"><%= suspicious.length %></div></div>
+    </div>
+
+    <!-- BUAT USER BARU -->
+    <div class="card" style="margin:0 20px 20px;">
+      <h3 style="margin-top:0;">➕ Buat User Baru</h3>
+      <form method="POST" action="/owner/user/create" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input type="text" name="username" placeholder="Username" required style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <input type="password" name="password" placeholder="Password" required style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <select name="role" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <option value="user">User (limit 3)</option>
+          <option value="ress">Ress (limit 10)</option>
+          <option value="partner">Partner (limit 17)</option>
+          <option value="admin">Admin (limit 25)</option>
+          <option value="moderator">Moderator (limit 30)</option>
+          <option value="owner">Owner (unlimited)</option>
+        </select>
+        <button class="btn">Buat Akun</button>
+      </form>
+    </div>
+
+    <!-- BROADCAST NOTIFIKASI -->
+    <div class="card" style="margin:0 20px 20px;">
+      <h3 style="margin-top:0;">📢 Broadcast Notifikasi</h3>
+      <form method="POST" action="/owner/notify" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <input type="text" name="message" placeholder="Tulis pesan notifikasi..." required style="flex:1; min-width:220px; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+        <select name="target" style="padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <option value="all">Semua Role</option>
+          <option value="user">User</option>
+          <option value="ress">Ress</option>
+          <option value="partner">Partner</option>
+          <option value="admin">Admin</option>
+          <option value="moderator">Moderator</option>
+        </select>
+        <button class="btn">Kirim</button>
+      </form>
+    </div>
+
+    <!-- DAFTAR USER -->
+    <div class="card" style="margin:0 20px 20px;">
+      <h3 style="margin-top:0;">👥 Daftar User</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Username</th><th>Role</th><th>Limit</th><th>IP Terkunci</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody>
+            <% users.forEach(function(u){ %>
+              <tr>
+                <td><%= u.username %></td>
+                <td><span class="badge badge-<%= u.role %>"><%= u.role %></span></td>
+                <td>
+                  <form method="POST" action="/owner/user/<%= u._id %>/limit" style="display:flex; gap:4px;">
+                    <input type="number" name="limit" value="<%= u.limit %>" style="width:70px; padding:4px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+                    <button class="btn btn-sm">Set</button>
+                  </form>
+                </td>
+                <td style="font-size:12px; color:var(--text-dim);"><%= u.lockedIp || '-' %></td>
+                <td><%= u.isBanned ? '🚫 Banned' : (u.isSuspicious ? '⚠️ Suspicious' : '✅ Aktif') %></td>
+                <td style="display:flex; gap:4px; flex-wrap:wrap;">
+                  <form method="POST" action="/owner/user/<%= u._id %>/ban"><button class="btn btn-sm btn-outline"><%= u.isBanned ? 'Unban' : 'Ban' %></button></form>
+                  <form method="POST" action="/owner/user/<%= u._id %>/reset-ip"><button class="btn btn-sm btn-outline">Reset IP</button></form>
+                  <form method="POST" action="/owner/user/<%= u._id %>/delete" onsubmit="return confirm('Hapus user ini?')"><button class="btn btn-sm btn-danger">Hapus</button></form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

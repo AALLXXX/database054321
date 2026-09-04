@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head><%- include('partials/head') %></head>
+<body data-theme="<%= theme %>">
+  <%- include('partials/navbar') %>
+
+  <div class="chat-wrap">
+    <div class="chat-sidebar">
+      <div style="padding:12px; border-bottom:1px solid var(--border);">
+        <strong>👤 User Lain</strong>
+      </div>
+      <% allUsers.forEach(function(u){ %>
+        <div class="chat-user-item" onclick="openPrivate('<%= u.username %>')">
+          <%= u.username %> <span class="badge badge-<%= u.role %>" style="font-size:9px;"><%= u.role %></span>
+        </div>
+      <% }); %>
+
+      <div style="padding:12px; border-bottom:1px solid var(--border); border-top:2px solid var(--border); margin-top:10px;">
+        <strong>👥 Grup Kamu</strong>
+      </div>
+      <% myGroups.forEach(function(g){ %>
+        <div class="chat-user-item" onclick="openGroup('<%= g._id %>', '<%= g.name %>')">📁 <%= g.name %></div>
+      <% }); %>
+
+      <div style="padding:12px;">
+        <form method="POST" action="/chat/group/create">
+          <input type="text" name="name" placeholder="Nama grup baru" style="width:100%; margin-bottom:6px; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <input type="text" name="members" placeholder="username1,username2" style="width:100%; margin-bottom:6px; padding:8px; border-radius:6px; border:1px solid var(--border); background:var(--bg); color:var(--text);">
+          <button class="btn btn-sm" style="width:100%;">+ Buat Grup</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="chat-main">
+      <div style="padding:14px; border-bottom:1px solid var(--border);" id="chatTitle">Pilih chat di kiri untuk mulai...</div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-bar">
+        <input type="text" id="chatInput" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter') sendMsg()">
+        <button class="btn" onclick="sendMsg()">Kirim</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const ME = "<%= me %>";
+    let current = null; // { type: 'private'|'group', id: username_or_groupId, label }
+    let pollTimer = null;
+
+    function renderMessages(messages) {
+      const box = document.getElementById('chatMessages');
+      box.innerHTML = messages.map(m =>
+        `<div class="bubble ${m.from === ME ? 'bubble-me' : 'bubble-other'}">
+          ${m.from !== ME ? `<div style="font-size:10px; opacity:.7;">${m.from}</div>` : ''}
+          ${escapeHtml(m.text)}
+        </div>`
+      ).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    async function openPrivate(username) {
+      current = { type: 'private', id: username };
+      document.getElementById('chatTitle').textContent = '💬 ' + username;
+      await loadMessages();
+      restartPolling();
+    }
+
+    async function openGroup(groupId, name) {
+      current = { type: 'group', id: groupId };
+      document.getElementById('chatTitle').textContent = '👥 ' + name;
+      await loadMessages();
+      restartPolling();
+    }
+
+    async function loadMessages() {
+      if (!current) return;
+      const url = current.type === 'private' ? `/chat/private/${current.id}` : `/chat/group/${current.id}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      renderMessages(data.messages || []);
+    }
+
+    async function sendMsg() {
+      if (!current) return;
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      const url = current.type === 'private' ? `/chat/private/${current.id}` : `/chat/group/${current.id}/send`;
+      await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      loadMessages();
+    }
+
+    function restartPolling() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(loadMessages, 3000); // simulasi realtime via polling
+    }
+  </script>
+</body>
+</html>
