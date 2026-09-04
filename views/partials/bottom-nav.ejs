@@ -1,0 +1,29 @@
+<div class="bottom-nav">
+  <a href="/dashboard" class="nav-item <%= active === 'home' ? 'active' : '' %>">
+    <span class="nav-icon">🏠</span> Home
+  </a>
+  <a href="/chat" class="nav-item <%= active === 'chat' ? 'active' : '' %>">
+    <span class="nav-icon">💬</span> Chat
+  </a>
+  <% if (session.role === 'owner') { %>
+    <a href="/owner" class="nav-item nav-center <%= active === 'owner' ? 'active' : '' %>">
+      <span class="nav-icon">👑</span>
+    </a>
+    <a href="/owner/database" class="nav-item <%= active === 'database' ? 'active' : '' %>">
+      <span class="nav-icon">🗄️</span> Data
+    </a>
+    <a href="/owner/monitor" class="nav-item <%= active === 'monitor' ? 'active' : '' %>">
+      <span class="nav-icon">📡</span> Monitor
+    </a>
+  <% } else { %>
+    <a href="/dashboard" class="nav-item nav-center">
+      <span class="nav-icon">➕</span>
+    </a>
+    <a href="/dashboard#notif" class="nav-item">
+      <span class="nav-icon">🔔</span> Notif
+    </a>
+    <a href="/logout" class="nav-item">
+      <span class="nav-icon">🚪</span> Keluar
+    </a>
+  <% } %>
+</div>
