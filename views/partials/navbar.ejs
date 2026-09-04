@@ -1,17 +1,7 @@
 <div class="topbar">
-  <div style="display:flex; align-items:center; gap:14px;">
-    <strong><%= dbName %></strong>
-    <a href="/dashboard" class="btn btn-outline btn-sm">🏠 Dashboard</a>
-    <a href="/chat" class="btn btn-outline btn-sm">💬 Chat</a>
-    <% if (session.role === 'owner') { %>
-      <a href="/owner" class="btn btn-outline btn-sm">👑 Owner Panel</a>
-      <a href="/owner/database" class="btn btn-outline btn-sm">🗄️ Database</a>
-      <a href="/owner/monitor" class="btn btn-outline btn-sm">📡 Monitor</a>
-    <% } %>
-  </div>
-  <div style="display:flex; align-items:center; gap:14px;">
+  <div class="brand">🔐 <%= dbName %></div>
+  <div style="display:flex; align-items:center; gap:10px;">
     <span class="badge badge-<%= session.role %>"><%= session.role %></span>
-    <span style="font-size:13px; color:var(--text-dim);"><%= session.username %></span>
-    <a href="/logout" class="btn btn-danger btn-sm">Keluar</a>
+    <span style="font-size:13px; font-weight:600;"><%= session.username %></span>
   </div>
 </div>
