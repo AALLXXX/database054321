@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="id">
 <head><%- include('partials/head') %></head>
-<body data-theme="<%= theme %>">
+<body data-theme="<%= theme %>" style="padding-bottom:0;">
   <div class="landing-hero">
     <div class="logo-orb">🔐</div>
     <div class="landing-title"><%= dbName %></div>
     <p class="landing-sub">
-      Ini adalah sistem database & lisensi resmi untuk mengelola akses script/bot WhatsApp &amp; Telegram.
+      Ini adalah sistem database &amp; lisensi resmi untuk mengelola akses script/bot WhatsApp &amp; Telegram.
       Setiap nomor WhatsApp dan token Telegram yang didaftarkan di sini akan diverifikasi lewat sistem role
       &amp; limit, supaya penggunaan script tetap terkontrol dan tidak disebarluaskan sembarangan tanpa izin developer.
     </p>
@@ -17,7 +17,7 @@
 
     <div class="card" style="max-width:480px; text-align:left;">
       <h3 style="margin-top:0;">📡 Kontak Developer</h3>
-      <p style="color:var(--text-dim); font-size:14px;">Punya kendala akses, mau nambah limit, atau laporan bug? Hubungi:</p>
+      <p style="color:var(--text-dim); font-size:14px; font-weight:600;">Punya kendala akses, mau nambah limit, atau laporan bug? Hubungi:</p>
       <div style="display:flex; flex-direction:column; gap:8px;">
         <a href="<%= contactDev %>" target="_blank" class="btn btn-outline btn-sm">👑 Developer Utama</a>
         <% contactCh.forEach(function(c){ %>
